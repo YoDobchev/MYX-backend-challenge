@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = 5000;
+const port = 3000;
 
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("imageInfos.db");
@@ -15,9 +15,9 @@ const imageThumbnail = require("image-thumbnail");
   );
 })();
 
-app.get("/get/images/", (req, res) => {
+app.get("/images", (req, res) => {
   db.all(
-    `SELECT id, latitudeD, latitudeM, latitudeS, longitudeD, longitudeM, longitudeS, altitude FROM imageInfos WHERE (latitudeD + latitudeM/60 + latitudeS/3600) BETWEEN ? and ? AND (longitudeD + longitudeM/60 + longitudeS/3600) BETWEEN ? and ?`,
+    "SELECT id, latitudeD, latitudeM, latitudeS, longitudeD, longitudeM, longitudeS, altitude FROM imageInfos WHERE (latitudeD + latitudeM/60 + latitudeS/3600) BETWEEN ? and ? AND (longitudeD + longitudeM/60 + longitudeS/3600) BETWEEN ? and ?",
     parseInt(req.query.minLat),
     parseInt(req.query.maxLat),
     parseInt(req.query.minLong),
@@ -37,7 +37,7 @@ app.get("/get/images/", (req, res) => {
   );
 });
 
-app.get("/get/images/:imageID", (req, res) => {
+app.get("/images/:imageID", (req, res) => {
   db.all(
     "SELECT id, image FROM imageInfos WHERE id = ?",
     req.params.imageID,
@@ -113,14 +113,25 @@ app.post("/images", (req, res) => {
 });
 
 app.delete("/images/:imageID", (req, res) => {
-  db.run(
-    "DELETE FROM imageInfos WHERE id = ?",
+  db.all(
+    "SELECT id FROM imageInfos WHERE id = ?",
     req.params.imageID,
-    (err, row) => {
+    (err, rows) => {
       if (err) throw err;
-      res
-        .status(200)
-        .send(`Image with id '${req.params.imageID}' has been deleted!`);
+      if (rows.length == 0) {
+        res.status(404).send("Image not found!");
+        return;
+      }
+      db.run(
+        "DELETE FROM imageInfos WHERE id = ?",
+        req.params.imageID,
+        (err) => {
+          if (err) throw err;
+          res
+            .status(200)
+            .send(`Image with id '${req.params.imageID}' has been deleted!`);
+        }
+      );
     }
   );
 });
