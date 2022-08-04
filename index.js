@@ -9,6 +9,8 @@ const ExifImage = require("exif").ExifImage;
 
 const imageThumbnail = require("image-thumbnail");
 
+const crypto = require("crypto");
+
 (function initiateDB() {
   db.run(
     "CREATE TABLE IF NOT EXISTS imageInfos (id INT64, image BLOB, latitudeD INT, latitudeM INT, latitudeS FLOAT, longitudeD INT, longitudeM INT, longitudeS FLOAT, altitude INT)"
@@ -32,7 +34,7 @@ app.get("/images", (req, res) => {
       rows.forEach((row) => {
         imageSearchResults.push(row);
       });
-      res.status(200).send(imageSearchResults);
+      res.status(200).send(JSON.stringify(imageSearchResults));
     }
   );
 });
@@ -54,7 +56,7 @@ app.get("/images/:imageID", (req, res) => {
   );
 });
 
-app.get("/get/images/:imageID/thumbnail", (req, res) => {
+app.get("/images/:imageID/thumbnail", (req, res) => {
   db.all(
     "SELECT id, image FROM imageInfos WHERE id = ?",
     req.params.imageID,
@@ -80,7 +82,7 @@ app.get("/get/images/:imageID/thumbnail", (req, res) => {
 });
 
 app.post("/images", (req, res) => {
-  const id = Date.now();
+  const id = crypto.randomBytes(8).toString('hex');
   let data = [];
   req.on("data", (chunk) => {
     data.push(chunk);
