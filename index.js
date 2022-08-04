@@ -82,7 +82,7 @@ app.get("/images/:imageID/thumbnail", (req, res) => {
 });
 
 app.post("/images", (req, res) => {
-  const id = crypto.randomBytes(8).toString('hex');
+  const id = crypto.randomBytes(8).toString("hex");
   let data = [];
   req.on("data", (chunk) => {
     data.push(chunk);
