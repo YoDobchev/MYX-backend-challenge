@@ -49,33 +49,23 @@ app.get("/images/:imageID", (req, res) => {
         res.status(404).send("Image not found!");
         return;
       }
-      rows.forEach((row) => {
-        res.header("Content-Type", "image/jpeg").end(row.image);
-      });
-    }
-  );
-});
-
-app.get("/images/:imageID/thumbnail", (req, res) => {
-  db.all(
-    "SELECT id, image FROM imageInfos WHERE id = ?",
-    req.params.imageID,
-    (err, rows) => {
-      if (err) throw err;
-      if (rows.length == 0) {
-        res.status(404).send("Image not found!");
-        return;
-      }
       rows.forEach(async (row) => {
-        try {
-          const thumbnail = await imageThumbnail(row.image, {
-            width: 256,
-            height: 256,
-          });
-          res.header("Content-Type", "image/jpeg").end(thumbnail);
-        } catch (err) {
-          console.error(err);
+        if (
+          Object.keys(req.query).length > 0 &&
+          Object.keys(req.query)[0] === "thumbnail"
+        ) {
+          try {
+            const thumbnail = await imageThumbnail(row.image, {
+              width: 256,
+              height: 256,
+            });
+            res.header("Content-Type", "image/jpeg").end(thumbnail);
+          } catch (err) {
+            console.error(err);
+          }
+          return;
         }
+        res.header("Content-Type", "image/jpeg").end(row.image);
       });
     }
   );
@@ -136,6 +126,12 @@ app.delete("/images/:imageID", (req, res) => {
       );
     }
   );
+});
+app.delete("/images/", (req, res) => {
+  db.run("DELETE FROM imageInfos", (err) => {
+    if (err) throw err;
+    res.status(200).send("All images have been deleted!");
+  });
 });
 
 app.listen(port, () => {
