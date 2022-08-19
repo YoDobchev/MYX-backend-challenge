@@ -3,7 +3,7 @@ for i in {1..2}; do
     echo -en "\n✅ "
     curl --location --request POST 'localhost:3000/images' \
     --header 'Content-Type: image/jpeg' \
-    --data-binary "@/$(pwd)/test/image$i.jpeg"
+    --data-binary "@$(pwd)/test/image$i.jpeg"
 done
 echo -e "\n✅ Printing out all images:"
 curl --location --request GET 'localhost:3000/images?minLat=0&maxLat=180&minLong=0&maxLong=180'

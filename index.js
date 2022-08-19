@@ -11,9 +11,9 @@ const imageThumbnail = require("image-thumbnail");
 
 const crypto = require("crypto");
 
-(function initiateDB() {
+(() => {
   db.run(
-    "CREATE TABLE IF NOT EXISTS imageInfos (id INT64, image BLOB, latitudeD INT, latitudeM INT, latitudeS FLOAT, longitudeD INT, longitudeM INT, longitudeS FLOAT, altitude INT)"
+    "CREATE TABLE IF NOT EXISTS imageInfos (id STRING, image BLOB, latitudeD INT, latitudeM INT, latitudeS FLOAT, longitudeD INT, longitudeM INT, longitudeS FLOAT, altitude INT)"
   );
 })();
 
@@ -26,11 +26,11 @@ app.get("/images", (req, res) => {
     parseInt(req.query.maxLong),
     (err, rows) => {
       if (err) throw err;
-      if (rows.length == 0) {
+      if (rows.length === 0) {
         res.status(404).send("No images found!");
         return;
       }
-      var imageSearchResults = [];
+      let imageSearchResults = [];
       rows.forEach((row) => {
         imageSearchResults.push(row);
       });
@@ -39,21 +39,18 @@ app.get("/images", (req, res) => {
   );
 });
 
-app.get("/images/:imageID", (req, res) => {
+app.get("/images/:imageId", (req, res) => {
   db.all(
     "SELECT id, image FROM imageInfos WHERE id = ?",
-    req.params.imageID,
+    req.params.imageId,
     (err, rows) => {
       if (err) throw err;
-      if (rows.length == 0) {
+      if (rows.length === 0) {
         res.status(404).send("Image not found!");
         return;
       }
       rows.forEach(async (row) => {
-        if (
-          Object.keys(req.query).length > 0 &&
-          Object.keys(req.query)[0] === "thumbnail"
-        ) {
+        if (Object.keys(req.query)[0] === "thumbnail") {
           try {
             const thumbnail = await imageThumbnail(row.image, {
               width: 256,
@@ -104,24 +101,24 @@ app.post("/images", (req, res) => {
   });
 });
 
-app.delete("/images/:imageID", (req, res) => {
+app.delete("/images/:imageId", (req, res) => {
   db.all(
     "SELECT id FROM imageInfos WHERE id = ?",
-    req.params.imageID,
+    req.params.imageId,
     (err, rows) => {
       if (err) throw err;
-      if (rows.length == 0) {
+      if (rows.length === 0) {
         res.status(404).send("Image not found!");
         return;
       }
       db.run(
         "DELETE FROM imageInfos WHERE id = ?",
-        req.params.imageID,
+        req.params.imageId,
         (err) => {
           if (err) throw err;
           res
             .status(200)
-            .send(`Image with id '${req.params.imageID}' has been deleted!`);
+            .send(`Image with id '${req.params.imageId}' has been deleted!`);
         }
       );
     }
