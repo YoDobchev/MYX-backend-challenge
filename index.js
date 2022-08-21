@@ -11,11 +11,9 @@ const imageThumbnail = require("image-thumbnail");
 
 const crypto = require("crypto");
 
-(() => {
-  db.run(
-    "CREATE TABLE IF NOT EXISTS imageInfos (id STRING, image BLOB, latitudeD INT, latitudeM INT, latitudeS FLOAT, longitudeD INT, longitudeM INT, longitudeS FLOAT, altitude INT)"
-  );
-})();
+db.run(
+  "CREATE TABLE IF NOT EXISTS imageInfos (id STRING, image BLOB, latitudeD INT, latitudeM INT, latitudeS FLOAT, longitudeD INT, longitudeM INT, longitudeS FLOAT, altitude INT)"
+);
 
 app.get("/images", (req, res) => {
   db.all(
